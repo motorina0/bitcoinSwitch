@@ -5,7 +5,9 @@
 
 ## Compatible with any ESP32 microcontroller, with or without a screen, supporting native LN invoices and static LNURLPay links.
 
-> <a href="https://youtu.be/FeoIwTjv3YM">Video tutorial</a>
+For use with LNURLDevice in LNbits.
+
+> <a href="https://youtu.be/FeoIwTjv3YM">Video tutorial</a> (old)
 
 > Join us! <a href="https://t.me/makerbits">t.me/makerbits</a>
 
