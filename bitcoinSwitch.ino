@@ -36,6 +36,7 @@ String serverFull;
 String lnbitsServer;
 String deviceId;
 String highPin;
+String pinFlip;
 String timePin;
 String lnurl;
 String dataId;
@@ -86,6 +87,12 @@ static const char PAGE_ELEMENTS[] PROGMEM = R"(
       "type": "ACInput",
       "label": "Pin to turn on",
       "value": ""
+    },
+    {
+      "name": "pinflip",
+      "type": "ACInput",
+      "label": "Flip the pin to LOW HIGH",
+      "value": "true"
     },
      {
       "name": "lnurl",
@@ -222,7 +229,11 @@ void setup()
 
     const JsonObject maRoot3 = doc[3];
     const char *maRoot3Char = maRoot3["value"];
-    lnurl = maRoot3Char;
+    pinFlip = maRoot3Char;
+
+    const JsonObject maRoot4 = doc[4];
+    const char *maRoot4Char = maRoot4["value"];
+    lnurl = maRoot4Char;
   }
   else{
     triggerAp = true;
@@ -238,7 +249,7 @@ void setup()
       File param = FlashFS.open(PARAM_FILE, "r");
       if (param)
       {
-        aux.loadElement(param, {"password", "server", "pin", "lnurl"});
+        aux.loadElement(param, {"password", "server", "pin", "pinflip", "lnurl"});
         param.close();
       }
 
@@ -247,7 +258,7 @@ void setup()
         File param = FlashFS.open(PARAM_FILE, "r");
         if (param)
         {
-          aux.loadElement(param, {"password", "server", "pin"});
+          aux.loadElement(param, {"password", "server", "pin", "pinflip", "lnurl"});
           param.close();
         }
       }
@@ -260,7 +271,7 @@ void setup()
       if (param)
       {
         // save as a loadable set for parameters.
-        elementsAux.saveElement(param, {"password", "server", "pin", "lnurl"});
+        elementsAux.saveElement(param, {"password", "server", "pin", "pinflip", "lnurl"});
         param.close();
         // read the saved elements again to display.
         param = FlashFS.open(PARAM_FILE, "r");
@@ -308,9 +319,7 @@ void setup()
   lnbitsScreen();
   delay(1000);
   pinMode(highPin.toInt(), OUTPUT);
-  digitalWrite(highPin.toInt(), HIGH);
-  delay(1000);
-  digitalWrite(highPin.toInt(), LOW);
+  onOff();
   webSocket.beginSSL(lnbitsServer, 443, "/lnurldevice/ws/" + deviceId);
   webSocket.onEvent(webSocketEvent);
 }
@@ -337,10 +346,7 @@ void loop() {
     if(usingM5 == true){
       paidScreen();
     }
-    digitalWrite(highPin.toInt(), HIGH);
-    delay(timePin.toInt());
-    digitalWrite(highPin.toInt(), LOW); 
-    delay(2000);
+  onOff();
   }
   else{
     getInvoice();
@@ -362,9 +368,7 @@ void loop() {
         if(usingM5 == true){
           completeScreen();
         }
-        digitalWrite(highPin.toInt(), HIGH);
-        delay(timePin.toInt());
-        digitalWrite(highPin.toInt(), LOW);
+        onOff();
       }
     }
     payReq = "";
@@ -373,6 +377,25 @@ void loop() {
     delay(4000);
   }
 }
+
+//////////////////HELPERS///////////////////
+
+void onOff()
+{ 
+  if(pinFlip == "true"){
+    digitalWrite(highPin.toInt(), LOW);
+    delay(timePin.toInt());
+    digitalWrite(highPin.toInt(), HIGH); 
+    delay(2000);
+  }
+  else{
+    digitalWrite(highPin.toInt(), HIGH);
+    delay(timePin.toInt());
+    digitalWrite(highPin.toInt(), LOW); 
+    delay(2000);
+  }
+}
+
 
 //////////////////DISPLAY///////////////////
 
