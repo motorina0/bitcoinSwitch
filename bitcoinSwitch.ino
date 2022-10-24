@@ -29,6 +29,7 @@ int portalPin = 4;
 /////////////////////////////////
 
 // Access point variables
+String payloadStr;
 String password;
 String serverFull;
 String lnbitsServer;
@@ -160,7 +161,17 @@ void loop() {
     while(paid == false && payReq != ""){
       webSocket.loop();
       if(paid){
-        Serial.println("Paid");
+        StaticJsonDocument<500> doc;
+        DeserializationError error = deserializeJson(doc, payloadStr);
+        if (error) {
+          Serial.print(F("deserializeJson() failed: "));
+          Serial.println(error.f_str());
+          return;
+        }
+        const char* highPinChar = doc["pin"];
+        highPin = highPinChar;
+        const char* timePinChar = doc["time"];
+        timePin = timePinChar;
         if(usingM5 == true){
           completeScreen();
         }
@@ -461,17 +472,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
             }
             break;
         case WStype_TEXT:
-            StaticJsonDocument<500> doc;
-            DeserializationError error = deserializeJson(doc, (char*)payload);
-            if (error) {
-              Serial.print(F("deserializeJson() failed: "));
-              Serial.println(error.f_str());
-              return;
-            }
-            const char* highPinChar = doc["pin"];
-            highPin = highPinChar;
-            const char* timePinChar = doc["time"];
-            timePin = timePinChar;
+            payloadStr = (char*)payload;
             paid = true;
             
 		case WStype_ERROR:			

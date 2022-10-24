@@ -1,18 +1,10 @@
 void configOverSerialPort() {
-  serialLaunch();
   executeConfig();
 }
 
 void executeConfig() {
   
   while (true) {
-    key_val = "";
-    getKeypad(false, true, false, false);
-    if (key_val == "*"){
-      getParams();
-      unConfirmed = false;
-      return;  
-    }
     if (Serial.available() == 0) continue;
     String data = Serial.readStringUntil('\n');
     Serial.println("received: " + data);
