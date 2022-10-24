@@ -1,11 +1,10 @@
 #include <WiFi.h>
-#include <WebServer.h>
 #include <FS.h>
 #include <SPIFFS.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include <Wire.h>
-using WebServerClass = WebServer;
+
 fs::SPIFFSFS &FlashFS = SPIFFS;
 #define FORMAT_ON_FAIL true
 #include <JC_Button.h>
@@ -34,7 +33,7 @@ String password;
 String serverFull;
 String lnbitsServer;
 String ssid;
-String wifipassword;
+String wifiPassword;
 String deviceId;
 String highPin;
 String timePin;
@@ -100,7 +99,8 @@ void setup()
   
   // get the saved details and store in global variables
   readFiles();
-  WiFi.begin(ssid, wifipassword);
+  
+  WiFi.begin(ssid.c_str(), wifiPassword.c_str());
   while (WiFi.status() != WL_CONNECTED && timer < 8000) {
     delay(1000);
     Serial.print(".");
@@ -205,17 +205,17 @@ void readFiles()
     const char *maRoot0Char = maRoot0["value"];
     password = maRoot0Char;
 
-    const Json1bject maRoot1 = doc[1];
+    const JsonObject maRoot1 = doc[1];
     const char *maRoot1Char = maRoot1["value"];
     ssid = maRoot1Char;
 
-    const Json2bject maRoot2 = doc[2];
+    const JsonObject maRoot2 = doc[2];
     const char *maRoot2Char = maRoot2["value"];
-    wifipassword = maRoot2Char;
+    wifiPassword = maRoot2Char;
 
     const JsonObject maRoot3 = doc[3];
     const char *maRoot3Char = maRoot3["value"];
-    socket = maRoot3Char;
+    lnbitsServer = maRoot3Char;
   }
   paramFile.close();
 }
@@ -462,7 +462,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
             break;
         case WStype_TEXT:
             StaticJsonDocument<500> doc;
-            error = deserializeJson(doc, (char*)payload);
+            DeserializationError error = deserializeJson(doc, (char*)payload);
             if (error) {
               Serial.print(F("deserializeJson() failed: "));
               Serial.println(error.f_str());
