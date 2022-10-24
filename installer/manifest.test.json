@@ -1,5 +1,5 @@
 {
-  "name": "LNbits BitcoinSwitch",
+  "name": "LNbits bitcoinSwitch",
   "version": "0.1",
   "funding_url": "https://github.com/lnbits/bitcoinSwitch",
   "new_install_prompt_erase": true,

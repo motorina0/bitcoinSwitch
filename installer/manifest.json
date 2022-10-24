@@ -1,5 +1,5 @@
 {
-  "name": "LNbits BitcoinSwitch",
+  "name": "LNbits bitcoinSwitch",
   "version": "0.1",
   "funding_url": "https://github.com/lnbits/bitcoinSwitch",
   "new_install_prompt_erase": true,
@@ -12,7 +12,7 @@
           "offset": 4096
         },
         {
-          "path": "firmware/esp32/v0.1/lnPoSTdisplay.ino.partitions.bin",
+          "path": "firmware/esp32/v0.1/bitcoinSwitch.ino.partitions.bin",
           "offset": 32768
         },
         {
@@ -20,7 +20,7 @@
           "offset": 57344
         },
         {
-          "path": "firmware/esp32/v0.1/lnPoSTdisplay.ino.bin",
+          "path": "firmware/esp32/v0.1/bitcoinSwitch.ino.bin",
           "offset": 65536
         }
       ]
