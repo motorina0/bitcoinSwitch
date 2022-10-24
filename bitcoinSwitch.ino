@@ -11,7 +11,6 @@ fs::SPIFFSFS &FlashFS = SPIFFS;
 #include <JC_Button.h>
 #include "qrcoded.h"
 
-#include <AutoConnect.h>
 #include <ArduinoJson.h>
 
 #include <WebSocketsClient.h>
@@ -34,10 +33,12 @@ int portalPin = 4;
 String password;
 String serverFull;
 String lnbitsServer;
+String ssid;
+String wifipassword;
 String deviceId;
 String highPin;
-String pinFlip;
 String timePin;
+String pinFlip;
 String lnurl;
 String dataId;
 String payReq;
@@ -47,120 +48,15 @@ int oldBalance;
 
 bool paid;
 bool down = false;
-bool triggerAp = false; 
-
-String content = "<h1>Base Access-point</br>For easy variable and wifi connection setting</h1>";
-
-// custom access point pages
-static const char PAGE_ELEMENTS[] PROGMEM = R"(
-{
-  "uri": "/config",
-  "title": "Access Point Config",
-  "menu": true,
-  "element": [
-    {
-      "name": "text",
-      "type": "ACText",
-      "value": "AP options",
-      "style": "font-family:Arial;font-size:16px;font-weight:400;color:#191970;margin-botom:15px;"
-    },
-    {
-      "name": "password",
-      "type": "ACInput",
-      "label": "Password",
-      "value": "ToTheMoon"
-    },
-    {
-      "name": "text",
-      "type": "ACText",
-      "value": "Project options",
-      "style": "font-family:Arial;font-size:16px;font-weight:400;color:#191970;margin-botom:15px;"
-    },
-    {
-      "name": "server",
-      "type": "ACInput",
-      "label": "LNbits LNURLDevice ws link",
-      "value": ""
-    },
-    {
-      "name": "pin",
-      "type": "ACInput",
-      "label": "Pin to turn on",
-      "value": ""
-    },
-    {
-      "name": "pinflip",
-      "type": "ACInput",
-      "label": "Flip the pin to LOW HIGH",
-      "value": "true"
-    },
-     {
-      "name": "lnurl",
-      "type": "ACInput",
-      "label": "Using LNURL",
-      "value": "true"
-    },
-    {
-      "name": "load",
-      "type": "ACSubmit",
-      "value": "Load",
-      "uri": "/config"
-    },
-    {
-      "name": "save",
-      "type": "ACSubmit",
-      "value": "Save",
-      "uri": "/save"
-    },
-    {
-      "name": "adjust_width",
-      "type": "ACElement",
-      "value": "<script type='text/javascript'>window.onload=function(){var t=document.querySelectorAll('input[]');for(i=0;i<t.length;i++){var e=t[i].getAttribute('placeholder');e&&t[i].setAttribute('size',e.length*.8)}};</script>"
-    }
-  ]
- }
-)";
-
-static const char PAGE_SAVE[] PROGMEM = R"(
-{
-  "uri": "/save",
-  "title": "Elements",
-  "menu": false,
-  "element": [
-    {
-      "name": "caption",
-      "type": "ACText",
-      "format": "Elements have been saved to %s",
-      "style": "font-family:Arial;font-size:18px;font-weight:400;color:#191970"
-    },
-    {
-      "name": "validated",
-      "type": "ACText",
-      "style": "color:red"
-    },
-    {
-      "name": "echo",
-      "type": "ACText",
-      "style": "font-family:monospace;font-size:small;white-space:pre;"
-    },
-    {
-      "name": "ok",
-      "type": "ACSubmit",
-      "value": "OK",
-      "uri": "/config"
-    }
-  ]
-}
-)";
+bool triggerUSB = false; 
 
 TFT_eSPI tft = TFT_eSPI();
 WebSocketsClient webSocket;
 
-WebServerClass server;
-AutoConnect portal(server);
-AutoConnectConfig config;
-AutoConnectAux elementsAux;
-AutoConnectAux saveAux;
+struct KeyValue {
+  String key;
+  String value;
+};
 
 void setup()
 {
@@ -177,13 +73,14 @@ void setup()
   BTNA.begin();
   int timer = 0;
   pinMode (2, OUTPUT);
+
   while (timer < 2000)
   {
     digitalWrite(2, LOW);
     if (usingM5 == true){
       if (BTNA.read() == 1){
         Serial.println("Launch portal");
-        triggerAp = true;
+        triggerUSB = true;
         timer = 5000;
       }
     }
@@ -191,7 +88,7 @@ void setup()
       Serial.println(touchRead(portalPin));
       if(touchRead(portalPin) < 60){
         Serial.println("Launch portal");
-        triggerAp = true;
+        triggerUSB = true;
         timer = 5000;
       }
     }
@@ -199,123 +96,22 @@ void setup()
     timer = timer + 100;
     delay(300);
   }
-    
- // h.begin();
-  FlashFS.begin(FORMAT_ON_FAIL);
-  SPIFFS.begin(true);
-  if(format == true){
-    SPIFFS.format(); 
-  }
+  timer = 0;
+  
   // get the saved details and store in global variables
-  File paramFile = FlashFS.open(PARAM_FILE, "r");
-  if (paramFile)
+  readFiles();
+  WiFi.begin(ssid, wifipassword);
+  while (WiFi.status() != WL_CONNECTED && timer < 8000) {
+    delay(1000);
+    Serial.print(".");
+    timer = timer + 1000;
+  }
+  
+  if (triggerUSB == true)
   {
-    StaticJsonDocument<2500> doc;
-    DeserializationError error = deserializeJson(doc, paramFile.readString());
-
-    const JsonObject maRoot0 = doc[0];
-    const char *maRoot0Char = maRoot0["value"];
-    password = maRoot0Char;
-    
-    const JsonObject maRoot1 = doc[1];
-    const char *maRoot1Char = maRoot1["value"];
-    serverFull = maRoot1Char;
-    lnbitsServer = serverFull.substring(5, serverFull.length() - 38);
-    deviceId = serverFull.substring(serverFull.length() - 22);
-
-    const JsonObject maRoot2 = doc[2];
-    const char *maRoot2Char = maRoot2["value"];
-    highPin = maRoot2Char;
-
-    const JsonObject maRoot3 = doc[3];
-    const char *maRoot3Char = maRoot3["value"];
-    pinFlip = maRoot3Char;
-
-    const JsonObject maRoot4 = doc[4];
-    const char *maRoot4Char = maRoot4["value"];
-    lnurl = maRoot4Char;
+    configOverSerialPort();
   }
-  else{
-    triggerAp = true;
-  }
-  paramFile.close();
-    server.on("/", []() {
-      content += AUTOCONNECT_LINK(COG_24);
-      server.send(200, "text/html", content);
-    });
-    
-    elementsAux.load(FPSTR(PAGE_ELEMENTS));
-    elementsAux.on([](AutoConnectAux &aux, PageArgument &arg) {
-      File param = FlashFS.open(PARAM_FILE, "r");
-      if (param)
-      {
-        aux.loadElement(param, {"password", "server", "pin", "pinflip", "lnurl"});
-        param.close();
-      }
 
-      if (portal.where() == "/config")
-      {
-        File param = FlashFS.open(PARAM_FILE, "r");
-        if (param)
-        {
-          aux.loadElement(param, {"password", "server", "pin", "pinflip", "lnurl"});
-          param.close();
-        }
-      }
-      return String();
-    });
-    saveAux.load(FPSTR(PAGE_SAVE));
-    saveAux.on([](AutoConnectAux &aux, PageArgument &arg) {
-      aux["caption"].value = PARAM_FILE;
-      File param = FlashFS.open(PARAM_FILE, "w");
-      if (param)
-      {
-        // save as a loadable set for parameters.
-        elementsAux.saveElement(param, {"password", "server", "pin", "pinflip", "lnurl"});
-        param.close();
-        // read the saved elements again to display.
-        param = FlashFS.open(PARAM_FILE, "r");
-        aux["echo"].value = param.readString();
-        param.close();
-      }
-      else
-      {
-        aux["echo"].value = "Filesystem failed to open.";
-      }
-      return String();
-    });
-    config.auth = AC_AUTH_BASIC;
-    config.authScope = AC_AUTHSCOPE_AUX;
-    config.ticker = true;
-    config.autoReconnect = true;
-    config.apid = "Device-" + String((uint32_t)ESP.getEfuseMac(), HEX);
-    config.psk = password;
-    config.menuItems = AC_MENUITEM_CONFIGNEW | AC_MENUITEM_OPENSSIDS | AC_MENUITEM_RESET;
-    config.reconnectInterval = 1;
-
-    if (triggerAp == true)
-    {
-      portalLaunched();
-      config.immediateStart = true;
-      portal.join({elementsAux, saveAux});
-      portal.config(config);
-      portal.begin();
-      while (true)
-      {
-        portal.handleClient();
-      }
-      timer = 2000;
-    }
-    timer = timer + 200;
-    delay(200);
-  if (lnbitsServer != "")
-  {
-    portal.join({elementsAux, saveAux});
-    config.autoRise = false;
-    portal.config(config);
-    portal.begin();
-  }
-  triggerAp = false;
   lnbitsScreen();
   delay(1000);
   pinMode(highPin.toInt(), OUTPUT);
@@ -396,6 +192,33 @@ void onOff()
   }
 }
 
+
+void readFiles()
+{
+  File paramFile = FlashFS.open(PARAM_FILE, "r");
+  if (paramFile)
+  {
+    StaticJsonDocument<1500> doc;
+    DeserializationError error = deserializeJson(doc, paramFile.readString());
+
+    const JsonObject maRoot0 = doc[0];
+    const char *maRoot0Char = maRoot0["value"];
+    password = maRoot0Char;
+
+    const Json1bject maRoot1 = doc[1];
+    const char *maRoot1Char = maRoot1["value"];
+    ssid = maRoot1Char;
+
+    const Json2bject maRoot2 = doc[2];
+    const char *maRoot2Char = maRoot2["value"];
+    wifipassword = maRoot2Char;
+
+    const JsonObject maRoot3 = doc[3];
+    const char *maRoot3Char = maRoot3["value"];
+    socket = maRoot3Char;
+  }
+  paramFile.close();
+}
 
 //////////////////DISPLAY///////////////////
 
@@ -638,7 +461,17 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
             }
             break;
         case WStype_TEXT:
-            timePin = (char*)payload;
+            StaticJsonDocument<500> doc;
+            error = deserializeJson(doc, (char*)payload);
+            if (error) {
+              Serial.print(F("deserializeJson() failed: "));
+              Serial.println(error.f_str());
+              return;
+            }
+            const char* highPinChar = doc["pin"];
+            highPin = highPinChar;
+            const char* timePinChar = doc["time"];
+            timePin = timePinChar;
             paid = true;
             
 		case WStype_ERROR:			
