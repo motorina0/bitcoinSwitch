@@ -73,13 +73,13 @@ function updateConfigTextFromInputFields() {
 }
 
 function updateConfigPropertiesFromInputFields() {
-    const inputFields = document.getElementsByClassName("lnpos-input-field");
+    const inputFields = document.getElementsByClassName("serial-config-input-field");
     const props = Array.from(inputFields).map(field => `${field.id}=${field.value || ''}`)
     configText.value = props.join('\n')
 }
 
 function updateConfigJsonFromInputFields() {
-    const inputFields = document.getElementsByClassName("lnpos-input-field");
+    const inputFields = document.getElementsByClassName("serial-config-input-field");
 
     const uiData = Array.from(inputFields).map(field => ({ name: field.id, value: field.value }))
     const data = JSON.parse(configText.value)
@@ -111,7 +111,7 @@ function createConfigElement(configField) {
                             id="${configField.name}" 
                             value="${configField.value || ''}" 
                             placeholder="${configField.placeholder || ''}" 
-                            class="lnpos-input-field" />`
+                            class="serial-config-input-field" />`
     }
     if (configField.type === 'ACText' && configField.value) {
         return `<h4 class="ud-feature-title">${configField.value}</h4>`
@@ -144,7 +144,7 @@ function onToggleConfig(cb) {
     if (cb.checked) {
         showMessage("To enter config mode: reboot the device then press & hold '1'")
     }
-    const configDivs = document.getElementsByClassName("lnpos-config-div");
+    const configDivs = document.getElementsByClassName("bitcoinswitch-config-div");
     Array.from(configDivs).forEach(div => {
         if (cb.checked) {
             div.classList.add('d-flex')
