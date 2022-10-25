@@ -106,6 +106,9 @@ void setup()
     delay(1000);
     Serial.print(".");
     timer = timer + 1000;
+    if(timer > 7000){
+      triggerUSB = true;
+    }
   }
   
   if (triggerUSB == true)
