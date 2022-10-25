@@ -144,7 +144,7 @@ function onToggleConfig(cb) {
     if (cb.checked) {
         showMessage("To enter config mode: reboot the device then press & hold '1'")
     }
-    const configDivs = document.getElementsByClassName("lnpos-config-div");
+    const configDivs = document.getElementsByClassName("bitcoinswitch-config-div");
     Array.from(configDivs).forEach(div => {
         if (cb.checked) {
             div.classList.add('d-flex')
