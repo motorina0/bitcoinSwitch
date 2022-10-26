@@ -97,9 +97,13 @@ void setup()
     delay(300);
   }
   timer = 0;
-  
+
+  FlashFS.begin(FORMAT_ON_FAIL);
+
   // get the saved details and store in global variables
   readFiles();
+
+  delay(2000);
   
   WiFi.begin(ssid.c_str(), wifiPassword.c_str());
   while (WiFi.status() != WL_CONNECTED && timer < 8000) {
@@ -113,6 +117,7 @@ void setup()
   
   if (triggerUSB == true)
   {
+    Serial.println("USB triggered");
     configOverSerialPort();
   }
 
@@ -218,18 +223,32 @@ void readFiles()
     const JsonObject maRoot0 = doc[0];
     const char *maRoot0Char = maRoot0["value"];
     password = maRoot0Char;
+    Serial.println(password);
 
     const JsonObject maRoot1 = doc[1];
     const char *maRoot1Char = maRoot1["value"];
     ssid = maRoot1Char;
+    Serial.println(ssid);
 
     const JsonObject maRoot2 = doc[2];
     const char *maRoot2Char = maRoot2["value"];
     wifiPassword = maRoot2Char;
+    Serial.println(wifiPassword);
 
     const JsonObject maRoot3 = doc[3];
     const char *maRoot3Char = maRoot3["value"];
     lnbitsServer = maRoot3Char;
+    Serial.println(lnbitsServer);
+
+    const JsonObject maRoot4 = doc[4];
+    const char *maRoot4Char = maRoot4["value"];
+    if(maRoot4Char == "true"){
+      lnurl = true;
+    }
+    else{
+      lnurl = false;
+    }
+    Serial.println(lnurl);
   }
   paramFile.close();
 }
