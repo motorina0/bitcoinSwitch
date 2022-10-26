@@ -21,7 +21,6 @@ fs::SPIFFSFS &FlashFS = SPIFFS;
 /////////////////////////////////
 
 bool usingM5 = false; // false if not using M5Stack          
-bool format = false; // true for formatting SPIFFS, use once, then make false and reflash
 int portalPin = 4;
 
 /////////////////////////////////
