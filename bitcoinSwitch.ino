@@ -201,6 +201,7 @@ void loop() {
 
 void onOff()
 { 
+  pinMode (highPin.toInt(), OUTPUT);
   if(pinFlip == "true"){
     digitalWrite(highPin.toInt(), LOW);
     delay(timePin.toInt());
