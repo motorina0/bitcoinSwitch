@@ -124,6 +124,7 @@ void setup()
   delay(1000);
   pinMode(highPin.toInt(), OUTPUT);
   onOff();
+  Serial.println(lnbitsServer + "/lnurldevice/ws/" + deviceId);
   webSocket.beginSSL(lnbitsServer, 443, "/lnurldevice/ws/" + deviceId);
   webSocket.onEvent(webSocketEvent);
 }
@@ -145,12 +146,22 @@ void loop() {
     paid = false;
     while(paid == false){
       webSocket.loop();
+      if(paid){
+        Serial.println(payloadStr);
+        highPin = getValue(payloadStr, '-', 0);
+        Serial.println(highPin);
+        timePin = getValue(payloadStr, '-', 1);
+        Serial.println(timePin);
+        if(usingM5 == true){
+          completeScreen();
+        }
+        onOff();
+      }
     }
     Serial.println("Paid");
     if(usingM5 == true){
       paidScreen();
     }
-  onOff();
   }
   else{
     getInvoice();
@@ -168,17 +179,11 @@ void loop() {
     while(paid == false && payReq != ""){
       webSocket.loop();
       if(paid){
-        StaticJsonDocument<500> doc;
-        DeserializationError error = deserializeJson(doc, payloadStr);
-        if (error) {
-          Serial.print(F("deserializeJson() failed: "));
-          Serial.println(error.f_str());
-          return;
-        }
-        const char* highPinChar = doc["pin"];
-        highPin = highPinChar;
-        const char* timePinChar = doc["time"];
-        timePin = timePinChar;
+        Serial.println(payloadStr);
+        highPin = getValue(payloadStr, '-', 0);
+        Serial.println(highPin);
+        timePin = getValue(payloadStr, '-', 1);
+        Serial.println(timePin);
         if(usingM5 == true){
           completeScreen();
         }
@@ -210,6 +215,21 @@ void onOff()
   }
 }
 
+String getValue(String data, char separator, int index)
+{
+    int found = 0;
+    int strIndex[] = { 0, -1 };
+    int maxIndex = data.length() - 1;
+
+    for (int i = 0; i <= maxIndex && found <= index; i++) {
+        if (data.charAt(i) == separator || i == maxIndex) {
+            found++;
+            strIndex[0] = strIndex[1] + 1;
+            strIndex[1] = (i == maxIndex) ? i+1 : i;
+        }
+    }
+    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
 
 void readFiles()
 {
@@ -236,8 +256,9 @@ void readFiles()
 
     const JsonObject maRoot3 = doc[3];
     const char *maRoot3Char = maRoot3["value"];
-    lnbitsServer = maRoot3Char;
-    Serial.println(lnbitsServer);
+    serverFull = maRoot3Char;
+    lnbitsServer = serverFull.substring(5, serverFull.length() - 38);
+    deviceId = serverFull.substring(serverFull.length() - 22);
 
     const JsonObject maRoot4 = doc[4];
     const char *maRoot4Char = maRoot4["value"];
