@@ -242,12 +242,7 @@ void readFiles()
 
     const JsonObject maRoot4 = doc[4];
     const char *maRoot4Char = maRoot4["value"];
-    if(maRoot4Char == "true"){
-      lnurl = true;
-    }
-    else{
-      lnurl = false;
-    }
+    lnurl = maRoot4Char;
     Serial.println(lnurl);
   }
   paramFile.close();
