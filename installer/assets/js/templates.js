@@ -42,6 +42,16 @@ const templates = Object.freeze({
                 "placeholder": "",
                 "style": "",
                 "apply": "text"
+            },
+            {
+                "name": "lnurl",
+                "type": "ACInput",
+                "value": "true",
+                "label": "LNURL",
+                "pattern": "",
+                "placeholder": "",
+                "style": "",
+                "apply": "text"
             }
         ])
     }
