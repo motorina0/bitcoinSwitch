@@ -11,8 +11,7 @@ For use with LNURLDevice in LNbits.
 
 > Join us! <a href="https://t.me/makerbits">t.me/makerbits</a>
 
-### Includes portal for easy setup and retail
-![portal](https://user-images.githubusercontent.com/33088785/166824760-bc612411-7663-4a78-9331-61390042e3ae.gif)
+### Flash and configure from browser! https://lnbits.github.io/bitcoinswitch/installer/
 
 ### Install instructions
 - Install <a href="https://www.arduino.cc/en/software">Arduino IDE 1.8.19</a>
