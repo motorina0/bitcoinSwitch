@@ -7,10 +7,13 @@
 
 For use with LNURLDevice in LNbits.
 
-✅ $5 worth parts/5min setup
-✅ Websockets for blazingly fast turning on the things
-✅ Web-installer/config for easy setup
-✅ Support for MULTIPLE GPIOS/LNURLs!!!
+### ✅ $5 worth parts/5min setup
+
+### ✅ Websockets for blazingly fast turning on the things
+
+### ✅ Web-installer/config for easy setup
+
+### ✅ Support for MULTIPLE GPIOS/LNURLs!!!
 
 > <a href="https://twitter.com/arcbtc/status/1585627498510831616">Video tutorial</a>
 
