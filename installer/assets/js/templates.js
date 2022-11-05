@@ -34,7 +34,7 @@ const templates = Object.freeze({
                 "apply": "text"
             },
             {
-                "name": "socket",
+                "name": "lnbitsServer",
                 "type": "ACInput",
                 "value": "",
                 "label": "Copy link from LNURLDevices extension in LNbits",
