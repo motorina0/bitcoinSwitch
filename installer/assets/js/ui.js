@@ -141,9 +141,6 @@ function refreshTextConfig() {
 }
 
 function onToggleConfig(cb) {
-    if (cb.checked) {
-        showMessage("To enter config mode: reboot the device holding boot pin'")
-    }
     const configDivs = document.getElementsByClassName("bitcoinswitch-config-div");
     Array.from(configDivs).forEach(div => {
         if (cb.checked) {
